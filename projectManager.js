@@ -1,75 +1,112 @@
 
-const fs = require('fs')
+ const fs = require('fs')
 
 class ProductManager {
-    constructor(){
-        this.products = []
-        this.path = './products.json'
+
+    constructor (path) {
+        this.dirName = './files'
+        this.fileName = this.dirName + path              
+        this.fs = fs
     }
+
     static id = 0
-    addProduct = async(title, description, price, thumbnail, stock, code)=>{
-        try{
-            if(title && description && price && thumbnail && stock && code){
-                const newProduct = {
-                    title: title,
-                    description: description,
-                    price: price,
-                    thumbnail: thumbnail,
-                    stock: stock,
-                    code: code,
-                    id: ProductManager.id++,
-                }
-                this.products.push(newProduct)
-                await fs.promises.writeFile(this.path, JSON.stringify(newProduct, null, 2))
-            } else {
-                console.error("Al producto le faltan datos")
-            }
-        }catch(error){
-            console.log(`error en el add products ${error}`)
-        }
-        
+
+    createFile = async() => {       
+        try {
+            if(!this.fs.existsSync(this.fileName)) {            
+                await this.fs.promises.mkdir(this.dirName, {recursive: true})
+                await this.fs.promises.writeFile(this.fileName, "[]")           
+            }    
+        } catch (error) {
+            throw Error `El archivo se encuentra creado ${error}`
+        }    
     }
-    getProducts = async()=>{
-        try{
-            if(fs.existsSync(this.path)){
-                const readFileGetProducts = await fs.promises.readFile(this.path, "utf-8")
-                const parseGetProducts = JSON.parse(readFileGetProducts)
-                return parseGetProducts
-            }else {
-                await fs.promises.writeFile(this.path, "[]")
-            }
-        }catch(error){
-            console.log(`error en el get products ${error}`);
+
+    addProduct = async(title, description, price, thumbnail, code, stock) => {
+        if (!title || !description || !price || !thumbnail || !code || !stock) {           
+        throw Error ("Falta info")     
+        } 
+        let product = {
+            title: title,
+            description: description,
+            price: price,
+            thumbnail: thumbnail,
+            code: code,
+            stock: stock,
+            id: ProductManager.id++
         }
-    }
-    getProductsById = async(id)=>{
-        try{
-            if(fs.existsSync(this.path)){
-                const searchId = await fs.promises.readFile(this.path, "utf-8")
-                const searchIdParse = JSON.parse(searchId)
-                const productFind = searchIdParse.forEach((item)=>{
-                    if(item.id == id){
-                        console.log('El producto que buscas si esta en tu inventario')
-                        return productFind
-                    }
-                }) 
-                
-            } else {
-                console.log("Not Found");
-            }
-        }catch(error){
-            console.log(`error en el getProductsById ${error}`);
-        }
-    }
-    updateProduct(){
+
+        try {
+            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")          
+            let readProductParse = JSON.parse(readProduct)
+            let busquedaCode = readProductParse.some((product => product.code === code))
+            if(busquedaCode) {
+                throw Error ("Mismo código")
+            }       
+            readProductParse.push(product)
+            await fs.promises.writeFile(this.fileName, JSON.stringify(readProductParse, null, 2))
+        } catch (error) {
+            throw Error ("No se puede agregar el producto.")
+        }         
 
     }
-    deleteProduct(){
 
+    getProducts = async() => {
+        let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")
+        let readProductParse = JSON.parse(readProduct) 
+        return readProductParse    
     }
+
+    getProductById = async(id) => {
+        try {
+            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")  
+            let readProductParse = JSON.parse(readProduct)   
+            let busquedaCode = readProductParse.find((product => product.id === id))  
+            if (busquedaCode) {                
+                return busquedaCode
+            } else {
+                throw Error ("El id recibido no coincide")
+            }
+        } catch (error) {
+            throw Error ("El id recibido no coincide")
+        } 
+    }
+
+    updateProduct = async(id, data) => {
+        try {
+            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")  
+            let readProductParse = JSON.parse(readProduct)  
+            let busquedaCode = readProductParse.find((product => product.id === id))   
+            if (busquedaCode) {                  
+            busquedaCode.title = data               
+            await fs.promises.writeFile(this.fileName, JSON.stringify(readProductParse, null, 2))                      
+            } else {
+                throw Error ("El id recibido no coincide")
+            }
+        } catch {
+            throw Error ("El id recibido no coincide")
+        }
+    }
+
+    deleteProduct = async(id) => {
+        try {
+            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")  
+            let readProductParse = JSON.parse(readProduct)  
+            let nuevoArray = []
+            let busquedaCode = readProductParse.find((product => product.id === id)) 
+            if (busquedaCode) {
+                nuevoArray = readProductParse.filter((p) => p.id !== id)
+                await fs.promises.writeFile(this.fileName, JSON.stringify(nuevoArray, null, 2))
+            } else {
+                throw Error ("Ningún producto contiene el id recibido.")
+            }       
+        } catch {
+            throw Error ("El id recibido no coincide")
+        } 
+    }
+
 }
+const product = new ProductManager("/products.json")
+// product.createFile()
+//product.addProduct("Escoba", "Semi nueva", 77, "https://http2.mlstatic.com/D_NQ_NP_2X_780827-MLA52027354635_102022-F.webp", "5s21", 5)
 
-const product = new ProductManager()
-product.getProducts()
-product.addProduct("Escoba", "Semi nueva", 77, "https://http2.mlstatic.com/D_NQ_NP_2X_780827-MLA52027354635_102022-F.webp", 5, 1545484)
-product.getProducts()
