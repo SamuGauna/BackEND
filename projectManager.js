@@ -1,5 +1,5 @@
 
- const fs = require('fs')
+const fs = require('fs')
 
 class ProductManager {
 
@@ -8,8 +8,6 @@ class ProductManager {
         this.fileName = this.dirName + path              
         this.fs = fs
     }
-
-    static id = 0
 
     createFile = async() => {       
         try {
@@ -23,28 +21,25 @@ class ProductManager {
     }
 
     addProduct = async(title, description, price, thumbnail, code, stock) => {
-        if (!title || !description || !price || !thumbnail || !code || !stock) {           
-        throw Error ("Falta info")     
-        } 
-        let product = {
+        try {
+            let productJS = await this.getProducts() 
+            let busquedaCode = productJS.some((product => product.code === code))
+            if(busquedaCode) {
+                throw Error ("Mismo código")
+            }
+            const lastProduct = productJS[productJS.length - 1];
+            const newId = lastProduct ? lastProduct.id + 1 : 1;
+            const product = {
             title: title,
             description: description,
             price: price,
             thumbnail: thumbnail,
             code: code,
             stock: stock,
-            id: ProductManager.id++
-        }
-
-        try {
-            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")          
-            let readProductParse = JSON.parse(readProduct)
-            let busquedaCode = readProductParse.some((product => product.code === code))
-            if(busquedaCode) {
-                throw Error ("Mismo código")
-            }       
-            readProductParse.push(product)
-            await fs.promises.writeFile(this.fileName, JSON.stringify(readProductParse, null, 2))
+            id: newId
+        }       
+            productJS.push(product)
+            await fs.promises.writeFile(this.fileName, JSON.stringify(productJS, null, 2))
         } catch (error) {
             throw Error ("No se puede agregar el producto.")
         }         
@@ -52,16 +47,19 @@ class ProductManager {
     }
 
     getProducts = async() => {
-        let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")
-        let readProductParse = JSON.parse(readProduct) 
-        return readProductParse    
+        try{
+            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")
+            let readProductParse = JSON.parse(readProduct) 
+            return readProductParse  
+        } catch(error){
+            console.log(error);
+        }
     }
 
     getProductById = async(id) => {
         try {
-            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")  
-            let readProductParse = JSON.parse(readProduct)   
-            let busquedaCode = readProductParse.find((product => product.id === id))  
+            let productJS = await this.getProducts() 
+            let busquedaCode = productJS.find((product => product.id === id))  
             if (busquedaCode) {                
                 return busquedaCode
             } else {
@@ -72,30 +70,34 @@ class ProductManager {
         } 
     }
 
-    updateProduct = async(id, data) => {
+    updateProduct = async(idUpdate, updateData) => {
         try {
-            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")  
-            let readProductParse = JSON.parse(readProduct)  
-            let busquedaCode = readProductParse.find((product => product.id === id))   
-            if (busquedaCode) {                  
-            busquedaCode.title = data               
-            await fs.promises.writeFile(this.fileName, JSON.stringify(readProductParse, null, 2))                      
+            let productJS = await this.getProducts()
+            let indexProduct = productJS.findIndex((product => product.id === idUpdate))   
+            if (indexProduct) {                  
+                const updatedProduct = {
+                    ...productJS[indexProduct],
+                    ...updateData,
+                    id: idUpdate,
+                };
+                productJS[indexProduct] = updatedProduct
+                await fs.promises.writeFile(this.fileName, JSON.stringify(productJS, null, 2));
+                console.log(`Producto actualizado exitosamente`);
             } else {
                 throw Error ("El id recibido no coincide")
             }
-        } catch {
-            throw Error ("El id recibido no coincide")
+        } catch(error) {
+            throw Error (error)
         }
     }
 
     deleteProduct = async(id) => {
         try {
-            let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")  
-            let readProductParse = JSON.parse(readProduct)  
+            let productJS = await this.getProducts()
             let nuevoArray = []
-            let busquedaCode = readProductParse.find((product => product.id === id)) 
+            let busquedaCode = productJS.find((product => product.id === id)) 
             if (busquedaCode) {
-                nuevoArray = readProductParse.filter((p) => p.id !== id)
+                nuevoArray = productJS.filter((p) => p.id !== id)
                 await fs.promises.writeFile(this.fileName, JSON.stringify(nuevoArray, null, 2))
             } else {
                 throw Error ("Ningún producto contiene el id recibido.")
@@ -107,6 +109,28 @@ class ProductManager {
 
 }
 const product = new ProductManager("/products.json")
-// product.createFile()
-//product.addProduct("Escoba", "Semi nueva", 77, "https://http2.mlstatic.com/D_NQ_NP_2X_780827-MLA52027354635_102022-F.webp", "5s21", 5)
-
+const testing = async()=> {
+    try {
+        await product.createFile()
+        const consulta1 = await product.getProducts()
+        console.log("consulta1", consulta1);
+        // se agrega un producto 
+        await product.addProduct("Escoba", "Semi nueva", 77, "https://http2.mlstatic.com/D_NQ_NP_2X_780827-MLA52027354635_102022-F.webp", "5s21", 5)
+        // consulta por id
+        const consulta2 = await product.getProductById(1)
+        console.log("consulta 2", consulta2);
+        // actualizar el producto por id
+        await product.updateProduct(1,{price:300, stock:30})
+        const consulta3 = await product.getProducts()
+        console.log("consulta 3", consulta3);
+        // eliminar producto por id
+        const consulta4 = await product.deleteProduct(1)
+        console.log("consulta 4", consulta4);
+        // consulta el array
+        const consulta5 = await product.getProducts()
+        console.log("consulta 5", consulta5);
+    } catch (error) {
+        console.log(error)
+    }
+}
+testing();

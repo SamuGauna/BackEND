@@ -1,0 +1,15 @@
+{
+  "name": "backgauna",
+  "version": "1.0.0",
+  "description": "",
+  "main": "projectManager.js",
+  "scripts": {
+    "start:http": "nodemon server-https.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
