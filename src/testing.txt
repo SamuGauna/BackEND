@@ -1,52 +1,3 @@
-import express from "express";
-import { ProductManager } from "../projectManager.js";
-
-
-const app = express()
-const PORT = 8080
-const product = new ProductManager("/products.json")
-
-app.listen(PORT, ()=>{
-    console.log("server ok en puerto 8080");
-})
-app.get('/products/', async(req, res) =>{
-    try {
-        const {limit} = req.query
-        const objectJS = await product.getProducts()
-        let objectJSParse = JSON.parse(objectJS)
-        if (limit) {
-            const limitProducts = await objectJSParse.splice(0, parseFloat(limit))
-            res.status(200).send(limitProducts)
-        } else {
-            res.status(200).send(objectJS)
-        }
-        
-    } catch (error) {
-        res.status(404).json({message:error.message})
-    }
-})
-app.get('/products/:pid', async (req, res) => {
-    try {
-        const { pid } = req.params;
-        const objectJS = await product.getProducts()
-        let objectJSParse = JSON.parse(objectJS)
-        
-        if(pid){
-            const paramFind = objectJSParse.find(p=> p.id === parseFloat(pid))
-            if(paramFind){
-                res.status(200).send(paramFind)
-            }else{
-                res.status(404).json({message:'Product not found'})
-            }
-        }
-        
-    } catch (error) {
-        res.status(404).json({ message: error.message });
-    }
-});
-
-
-
 // const testing = async()=> {
 //     try {
 //         await product.createFile()
@@ -74,3 +25,30 @@ app.get('/products/:pid', async (req, res) => {
 //     }
 // }
 // testing();
+// {
+    "title": "Escoba",
+    "description": "Semi nueva",
+    "price": 77,
+    "thumbnail": "https://http2.mlstatic.com/D_NQ_NP_2X_780827-MLA52027354635_102022-F.webp",
+    "code": "5s21",
+    "stock": 5,
+    "id": 1
+  },
+  {
+    "title": "Mopa",
+    "description": "Nueva",
+    "price": 665,
+    "thumbnail": "https://http2.mlstatic.com/D_NQ_NP_2X_724551-MLA32041668736_092019-F.webp",
+    "code": "2b51ss",
+    "stock": 2000,
+    "id": 2
+  },
+  {
+    "title": "Secador de piso",
+    "description": "Un solo uso",
+    "price": 99,
+    "thumbnail": "https://http2.mlstatic.com/D_NQ_NP_2X_775191-MLA53364171913_012023-F.webp",
+    "code": "3sd5c",
+    "stock": 2,
+    "id": 3
+  }

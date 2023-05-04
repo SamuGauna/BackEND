@@ -3,7 +3,7 @@ import fs from "fs"
 export class ProductManager {
 
     constructor (path) {
-        this.dirName = './files'
+        this.dirName = './src/files'
         this.fileName = this.dirName + path              
         this.fs = fs
     }
@@ -19,7 +19,7 @@ export class ProductManager {
         }    
     }
 
-    addProduct = async(title, description, price, thumbnail, code, stock) => {
+    addProduct = async(title, description, price, thumbnail, code, stock, status) => {
         try {
             let productJS = await this.getProducts() 
             let busquedaCode = productJS.some((product => product.code === code))
@@ -35,6 +35,7 @@ export class ProductManager {
             thumbnail: thumbnail,
             code: code,
             stock: stock,
+            status: status,
             id: newId
         }       
             productJS.push(product)
@@ -48,9 +49,8 @@ export class ProductManager {
     getProducts = async() => {
         try{
             let readProduct = await this.fs.promises.readFile(this.fileName, "utf-8")
-            // let readProductParse = JSON.parse(readProduct) 
-            // return readProductParse
-            return readProduct
+            let readProductParse = JSON.parse(readProduct) 
+            return readProductParse
         } catch(error){
             console.log(error);
         }

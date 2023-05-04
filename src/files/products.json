@@ -1,0 +1,57 @@
+[
+  {
+    "title": "Escoba",
+    "description": "Semi nueva",
+    "price": 99,
+    "thumbnail": "https://http2.mlstatic.com/D_NQ_NP_2X_780827-MLA52027354635_102022-F.webp",
+    "code": "5s21",
+    "stock": 5,
+    "id": 1
+  },
+  {
+    "title": "Mopa",
+    "description": "Nueva",
+    "price": 665,
+    "thumbnail": "https://http2.mlstatic.com/D_NQ_NP_2X_724551-MLA32041668736_092019-F.webp",
+    "code": "2b51ss",
+    "stock": 2000,
+    "id": 2
+  },
+  {
+    "title": "Secador de piso",
+    "description": "Un solo uso",
+    "price": 99,
+    "thumbnail": "https://http2.mlstatic.com/D_NQ_NP_2X_775191-MLA53364171913_012023-F.webp",
+    "code": "3sd5c",
+    "stock": 2,
+    "id": 3
+  },
+  {
+    "title": "Aspiradora",
+    "description": "6 meses de garantia",
+    "price": 55,
+    "thumbnail": "url cualquiera",
+    "code": "5s4545451s21",
+    "stock": 5,
+    "id": 4
+  },
+  {
+    "title": "Aspiradora",
+    "description": "6 meses de garantia",
+    "price": 55,
+    "thumbnail": "url cualquiera",
+    "code": "5s454545s21",
+    "stock": 5,
+    "id": 5
+  },
+  {
+    "title": "Aspiradora",
+    "description": "6 meses de garantia",
+    "price": 55,
+    "thumbnail": "url cualquiera",
+    "code": "5s454545ssds21",
+    "stock": 5,
+    "status": "true",
+    "id": 6
+  }
+]
