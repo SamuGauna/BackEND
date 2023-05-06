@@ -63,10 +63,10 @@ export class ProductManager {
             if (busquedaCode) {                
                 return busquedaCode
             } else {
-                throw Error ("El id recibido no coincide")
+                throw Error ("El id del product recibido no coincide")
             }
         } catch (error) {
-            throw Error ("El id recibido no coincide")
+            throw Error ("El id del product recibido no coincide")
         } 
     }
 

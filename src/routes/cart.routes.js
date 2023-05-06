@@ -3,6 +3,7 @@ import { CartManager } from "../manager/cartManager.js";
 
 const router = Router()
 const cart = new CartManager("/cart.json")
+cart.createFileCart()
 
 router.post('/', async(req, res) =>{
     try {
@@ -30,7 +31,8 @@ router.post('/:cid/product/:pid', async(req, res) =>{
         await cart.addProductCart(parseFloat(cid), parseFloat(pid))
         res.status(201).send({mensaje: "Producto agregado con éxito!"}); 
     } catch (error) {
-        res.status(404).json({message:error.message})
+        console.log(error)
+        return res.status(202).send({ status: "ERROR", error: error })
     }
 })
 export default router

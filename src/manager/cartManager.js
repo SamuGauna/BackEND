@@ -1,7 +1,7 @@
 import fs from "fs"
 import { ProductManager } from "../manager/productManager.js"
 
-const productManager = new ProductManager()
+const productManager = new ProductManager("/products.json")
 
 export class CartManager {
     constructor (path) {
@@ -29,7 +29,7 @@ export class CartManager {
                 products: []
             } 
             cartGet.push(cart)
-            await fs.promises.writeFile(this.fileName, JSON.stringify(cartGet, null, 2))
+            await this.fs.promises.writeFile(this.fileName, JSON.stringify(cartGet, null, 2))
         } catch (error) {
             
         }
@@ -46,11 +46,11 @@ export class CartManager {
     getCartById = async(id)=>{
         try {
             let cartGet = await this.getCarts()
-            let findCartId = cartGet.find((cart => cart.id === id))
+            let findCartId = cartGet.find((cart => cart.id == id))
             if (findCartId) {                                                                             
-                return findCartId.products
+                return findCartId
             } else {
-                throw Error ("El id recibido no coincide")
+                throw Error ("El id del cart recibido no coincide")
             }
         } catch (error) {
             console.log(error);
@@ -59,16 +59,32 @@ export class CartManager {
     addProductCart = async(idCart, Idproduct)=>{
         try {
             let cartGet = await this.getCarts()
-            const lastProduct = cartGet[cartGet.length - 1];
-            const newQuantity = lastProduct ? lastProduct.quantity + 1 : 1;
+            //obtener el carrito por id
+            const searchCartById = cartGet.find((obj => obj.id == idCart))
+            
+            // obtener el id del producto
             let findProd = await productManager.getProductById(Idproduct)
-            let productId = findProd.id
-            const newProdToCart = {
-                quantity: newQuantity,
-                prod: productId
+            // fijarse si el producto ya esta en el carrito
+            const newProductToCart = {
+                quantity: 1,
+                productID: findProd.id
             }
-            cartGet.products.push(newProdToCart)
+            const productInCartFind = await searchCartById.products.find((p => p.productID === findProd.id))
+            if(productInCartFind){
+                productInCartFind.quantity++
+                return await fs.promises.writeFile(this.fileName, JSON.stringify(cartGet, null, 2))
+            }
+            searchCartById.products.push(newProductToCart)
             await fs.promises.writeFile(this.fileName, JSON.stringify(cartGet, null, 2))
+            //let cartGetId = await this.getCartById(idCart)
+            // const cartFind = await cartGetId.products.find((p => p.productID === findProd.id))
+            // if(cartFind){
+            //     cartFind.quantity++
+            //     return await fs.promises.writeFile(this.fileName, JSON.stringify(cartGet, null, 2))
+            // }
+            // cartGetId.products.push(newProductToCart)
+            // await fs.promises.writeFile(this.fileName, JSON.stringify(cartGet, null, 2))
+            
         } catch (error) {
             console.log(error);
         }
