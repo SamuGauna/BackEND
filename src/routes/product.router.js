@@ -12,9 +12,9 @@ router.get('/', async(req, res) =>{
         
         if (limit) {
             const limitProducts = await products.splice(0, parseFloat(limit))
-            res.status(200).send(limitProducts)
+            res.status(201).send(limitProducts)
         } else {
-            res.status(200).send(products)
+            res.status(201).send(products)
         }
         
     } catch (error) {
@@ -25,10 +25,10 @@ router.get('/:pid', async (req, res) => {
     try {
         const { pid } = req.params;
         const productById = await product.getProductById(parseInt(pid))
-        if(productById != null){
+        if(productById == null){
             return res.status(404).json({message:'Product not found'})
         }
-        return res.status(200).json(productById)
+        return res.status(201).json(productById)
     } catch (error) {
         console.log(error)
         return res.status(500).json({ message: 'Ha ocurrido un error' });
@@ -37,11 +37,15 @@ router.get('/:pid', async (req, res) => {
 router.post('/', async(req, res)=>{
     try {
         
-        const {title, description, price, thumbnail, code, stock, status} = req.body
-        const newProd = await product.addProduct(title, description, price, thumbnail, code, stock, status)
-        res.json(newProd)
+        const {title, description, price, thumbnails, code, stock, status} = req.body
+        const newProd = await product.addProduct(title, description, price, thumbnails, code, stock, status)
+        if(product.existCode){
+            res.status(404).json({message: "El producto ya existe"})
+        }
+        res.status(201).send(`El producto ${newProd.title} fue agregado exitosamente`)
     } catch (error) {
-        res.status(404).json({ message: error.message });
+        console.log(error)
+        return res.status(500).json({ message: 'Ha ocurrido un error' });
     }
 })
 router.put('/:id', async(req,res)=>{ 
@@ -50,8 +54,8 @@ router.put('/:id', async(req,res)=>{
         const {id} = req.params
         const prodFind = await product.getProductById(parseFloat(id))
         if (prodFind) {
-            await product.updateProduct(parseFloat(id), prod)
-            res.send("Product updated successfully")
+            const updateProd = await product.updateProduct(parseFloat(id), prod)
+            res.status(201).send(`Product with code: ${updateProd.code} updated successfully`)
         } else{
             res.status(404).send('product not found');
         }
@@ -65,7 +69,7 @@ router.delete('/:id', async(req, res)=>{
         const allProducts = await product.getProducts()
         if (allProducts.length > 0) {
             await product.deleteProduct(parseFloat(id))
-            res.send(`product with id: ${id} deleted`)
+            res.status(201).send(`product with id: ${id} deleted`)
         }else{
             res.send(`product with id: ${id} not found`)
         }

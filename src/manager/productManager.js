@@ -19,7 +19,7 @@ export class ProductManager {
         }    
     }
 
-    addProduct = async(title, description, price, thumbnail, code, stock, status) => {
+    addProduct = async(title, description, price, thumbnails, code, stock, status) => {
         try {
             let productJS = await this.getProducts() 
             let busquedaCode = productJS.some((product => product.code === code))
@@ -32,7 +32,7 @@ export class ProductManager {
             title: title,
             description: description,
             price: price,
-            thumbnail: thumbnail,
+            thumbnails: thumbnails,
             code: code,
             stock: stock,
             status: status,
@@ -63,10 +63,10 @@ export class ProductManager {
             if (busquedaCode) {                
                 return busquedaCode
             } else {
-                throw Error ("El id del product recibido no coincide")
+                return null;
             }
         } catch (error) {
-            throw Error ("El id del product recibido no coincide")
+            throw error
         } 
     }
 
